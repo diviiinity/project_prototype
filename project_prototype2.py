@@ -13,7 +13,7 @@ dumping_data = pd.read_csv("data/dumping_types.csv")
 tips_data = pd.read_csv("data/reporting_tips.csv")
 
 # Initialize OpenAI client
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # Function to analyze pollution
 def get_ai_analysis(prompt, model="gpt-3.5-turbo"):
@@ -90,7 +90,7 @@ def detect_waste_type(image_file):
 
 # Feature3
 # Contact local authorities based on detected waste types
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "data/vision_key.json"
+
 def contact_authorities(location, detected_types):
     matched_agencies = set()
 
