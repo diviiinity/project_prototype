@@ -90,6 +90,7 @@ def detect_waste_type(image_file):
 
 # Feature3
 # Contact local authorities based on detected waste types
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "data/vision_key.json"
 def contact_authorities(location, detected_types):
     matched_agencies = set()
 
