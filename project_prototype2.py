@@ -13,7 +13,7 @@ dumping_data = pd.read_csv("data/dumping_types.csv")
 tips_data = pd.read_csv("data/reporting_tips.csv")
 
 # Initialize OpenAI client
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+client = OpenAI(api_key=os.secrets["OPENAI_API_KEY"])
 
 # Function to analyze pollution
 def get_ai_analysis(prompt, model="gpt-3.5-turbo"):
