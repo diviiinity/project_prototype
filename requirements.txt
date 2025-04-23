@@ -1,8 +1,6 @@
 streamlit
 openai
 pandas
-pillow
 piexif
+Pillow
 opencage
-google-cloud-vision
-json
