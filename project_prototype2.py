@@ -3,17 +3,17 @@ import time
 import os
 import pandas as pd
 import piexif
+import base64
 from openai import OpenAI
 from PIL import Image
 from opencage.geocoder import OpenCageGeocode
-from google.cloud import vision
 
 # Load datasets
 dumping_data = pd.read_csv("data/dumping_types.csv")
 tips_data = pd.read_csv("data/reporting_tips.csv")
 
 # Initialize OpenAI client
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 # Function to analyze pollution
 def get_ai_analysis(prompt, model="gpt-3.5-turbo"):
@@ -26,8 +26,7 @@ def get_ai_analysis(prompt, model="gpt-3.5-turbo"):
     )
     return response.choices[0].message.content
 
-# Feature1
-# Extract location from image EXIF metadata
+# Feature1: Extract location from image EXIF metadata
 def extract_location(image_file):
     try:
         img = Image.open(image_file)
@@ -67,30 +66,42 @@ def reverse_geocode(lat, lon):
         print("Reverse geocoding failed:", e)
     return f"{lat:.6f}, {lon:.6f}"
 
-#Feature2
-# Detect waste type using Google Vision API
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "data/vision_key.json"
-
+# Feature2: Detect waste type using OpenAI Vision
 def detect_waste_type(image_file):
-    client = vision.ImageAnnotatorClient()
-    content = image_file.read()
+    image_bytes = image_file.read()
+    encoded_image = base64.b64encode(image_bytes).decode("utf-8")
     image_file.seek(0)
-    image = vision.Image(content=content)
 
-    response = client.label_detection(image=image)
-    labels = response.label_annotations
+    vision_prompt = [
+        {
+            "role": "system",
+            "content": "You are a waste classification expert. You analyze images and return the type of waste present (e.g., plastic, oil, metal, glass, organic, tire, etc)."
+        },
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Identify the types of waste in this image (e.g., plastic, oil, glass, food, e-waste, etc)."},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{encoded_image}"
+                    }
+                }
+            ]
+        }
+    ]
 
-    # List of waste-related terms you're interested in
-    known_waste_types = ["plastic", "oil", "metal", "glass", "organic", "electronic", "tire", "battery"]
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=vision_prompt,
+        max_tokens=200
+    )
 
-    detected_labels = [label.description.lower() for label in labels]
-    detected_waste = [label for label in detected_labels if label in known_waste_types]
+    result_text = response.choices[0].message.content.strip()
+    detected_items = [item.strip().lower() for item in result_text.split(",") if item]
+    return detected_items or ["unknown"]
 
-    return detected_waste or ["unknown"]
-
-# Feature3
-# Contact local authorities based on detected waste types
-
+# Feature3: Contact local authorities based on detected waste types
 def contact_authorities(location, detected_types):
     matched_agencies = set()
 
