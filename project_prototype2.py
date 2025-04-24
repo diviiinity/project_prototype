@@ -5,7 +5,7 @@ import pandas as pd
 import piexif
 import base64
 from openai import OpenAI
-from PIL import Image
+from PIL import Image, ImageOps
 from opencage.geocoder import OpenCageGeocode
 
 # Load datasets
@@ -131,7 +131,7 @@ def get_reporting_tips(detected_types):
 page_element="""
 <style>
 [data-testid="stAppViewContainer"] {
-    background-image: url("https://images.pexels.com/photos/15265064/pexels-photo-15265064/free-photo-of-seagulls-on-the-shore.jpeg");
+    background-image: url("https://images.pexels.com/photos/2480807/pexels-photo-2480807.jpeg");
     background-size: cover;
 }
 
@@ -146,6 +146,11 @@ page_element="""
 
 [data-testid="stSidebar"] p {
     line-height: 1.75;
+}
+
+[data-testid="stFullScreenFrame"] {
+    display: flex;
+    justify-content: center;
 }
 
 [data-testid="stMain"] p {
@@ -176,10 +181,20 @@ summary:hover {
     color: steelblue !important;
 }
 
-[data-testid="stMarkdown"] {
-    background-color: rgba(255, 255, 255, .80);
-    padding: 10px;
+.st-key-mainC,
+.st-key-photosC {
+    background-color: rgba(255, 255, 255, .50);
+    padding: 20px;
     border-radius: 10px;
+    color: black;
+}
+
+.st-key-photosC {
+    background-color: rgba(255, 255, 255, .9)
+}
+
+#aquaalert-illegal-dumping-reporting-tool {
+    padding-top: 0px;
 }
 
 button:hover, button:focus {
@@ -194,57 +209,75 @@ st.markdown(page_element, unsafe_allow_html=True)
 col1, col2, col3 = st.sidebar.columns([1, 1, 1])
 with col2:
     st.sidebar.title("WELCOME!")
-    st.sidebar.image("images/aqua.PNG")
+    st.sidebar.image("images/aqua.PNG", width=200)
     st.sidebar.divider()
     st.sidebar.markdown("Aqua Alert was made to help local communities care for their waterways using an accessible and intuitive app!")
+    st.sidebar.markdown("AI-powered tool to report illegal dumping, contact agencies, and learn how to reduce pollution.")
     st.sidebar.markdown("For a demo of our app, please visit this link here: -insert link in the future-.")
 
-
 # --- Streamlit UI ---
-st.title("AquaAlert: Illegal Dumping Reporting Tool")
-st.subheader("📸 Just upload a photo — we’ll take care of the rest!")
-st.markdown("AI-powered tool to report illegal dumping, contact agencies, and learn how to reduce pollution.")
+main_c = st.container(key="mainC")
+with main_c:
+    st.title("AquaAlert: Illegal Dumping Reporting Tool")
+    st.subheader("📸 Just upload a photo — we’ll take care of the rest!")
+    st.markdown("Please note: when uploading a picture, make sure location is turned on and camera is allowed.")
 
-# Upload section
-uploaded_file = st.file_uploader("Upload a photo of the polluted site", type=["jpg", "jpeg", "png"])
-description = st.text_area("Optional: Add a brief description (if you'd like)", placeholder="e.g., Looks like a spill near the river...")
+    # Upload section
+    uploaded_file = st.file_uploader("Upload a photo of the polluted site", type=["jpg", "jpeg", "png"],
+                                    help="Please note: when uploading a picture, make sure location is turned on and camera is allowed.")
+    description = st.text_area("Optional: Add a brief description (if you'd like)", placeholder="e.g., Looks like a spill near the river...")
 
-if st.button("Report"):
-    if uploaded_file:
-        with st.spinner("Analyzing the image and contacting local agencies..."):
-            time.sleep(2)
+    if st.button("Report"):
+        if uploaded_file:
+            with st.spinner("Analyzing the image and contacting local agencies..."):
+                time.sleep(2)
 
-            # Step 1: Detect waste and location
-            detected_types = detect_waste_type(uploaded_file)
-            uploaded_file.seek(0)  # reset to read again
-            location = extract_location(uploaded_file)
+                # Step 1: Detect waste and location
+                detected_types = detect_waste_type(uploaded_file)
+                uploaded_file.seek(0)  # reset to read again
+                location = extract_location(uploaded_file)
 
-            # Step 2: Display basic info
-            st.subheader("📍 Report Summary")
-            st.markdown(f"**Location Detected:** {location}")
-            st.markdown(f"**Waste Type Detected:** {', '.join([w.title() for w in detected_types])}")
+                # Step 2: Display basic info
+                st.subheader("📍 Report Summary")
+                st.markdown(f"**Location Detected:** {location}")
+                st.markdown(f"**Waste Type Detected:** {', '.join([w.title() for w in detected_types])}")
 
-            # Step 3: AI Summary
-            ai_prompt = f"""
-            Analyze this illegal dumping report. Location: {location}.
-            Detected waste types: {', '.join(detected_types)}.
-            Additional description: {description}.
-            What kind of pollution is this and what actions can help?
-            """
-            analysis_result = get_ai_analysis(ai_prompt)
+                # Step 3: AI Summary
+                ai_prompt = f"""
+                Analyze this illegal dumping report. Location: {location}.
+                Detected waste types: {', '.join(detected_types)}.
+                Additional description: {description}.
+                What kind of pollution is this and what actions can help?
+                """
+                analysis_result = get_ai_analysis(ai_prompt)
 
-            st.subheader("🌍 Pollution Incident Summary:")
-            st.write(analysis_result)
+                st.subheader("🌍 Pollution Incident Summary:")
+                st.write(analysis_result)
 
-            # Step 4: Notify authorities
-            st.subheader("📡 Authorities Notified:")
-            st.success(contact_authorities(location, detected_types))
+                # Step 4: Notify authorities
+                st.subheader("📡 Authorities Notified:")
+                st.success(contact_authorities(location, detected_types))
 
-            # Step 5: Show helpful tips
-            st.subheader("💡 Helpful Tips:")
-            for tip in get_reporting_tips(detected_types):
-                st.markdown(f"- {tip}")
+                # Step 5: Show helpful tips
+                st.subheader("💡 Helpful Tips:")
+                for tip in get_reporting_tips(detected_types):
+                    st.markdown(f"- {tip}")
 
-            st.success("✅ Thanks for reporting and making a difference!")
-    else:
-        st.warning("Please upload an image to begin.")
+                st.success("✅ Thanks for reporting and making a difference!")
+        else:
+            st.warning("Please upload an image to begin.")
+
+photos_c = st.container(key="photosC")
+with photos_c:
+    st.markdown("Here are some sample photos:")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.image("images/sample_1.jpg")
+
+    with col2:
+        st.image("images/sample_2.jpg")
+
+    with col3:
+        st.image("images/sample_3.jpg")
