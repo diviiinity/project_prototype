@@ -1,6 +1,5 @@
 import streamlit as st
 import time
-import os
 import pandas as pd
 import piexif
 import base64
