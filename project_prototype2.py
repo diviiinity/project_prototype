@@ -261,10 +261,10 @@ with main_c:
                 st.subheader("🌟 See the Impact of Cleanup Efforts!")
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.image("images/before_after_collage1.jpg", use_column_width=True)
+                    st.image("images/before_after_collage1.jpg", use_container_width=True)
                     st.caption("Marine Debris in Biscayne National Park, U.S. National Park Service")
                 with col2:
-                    st.image("images/before_after_collage2.jpg", use_column_width=True)
+                    st.image("images/before_after_collage2.jpg", use_container_width=True)
                     st.caption("Before and after Andy's Christmas Day 2024 efforts showing the impact one dedicated person can have")
                     
                 st.success("✅ Thanks for reporting and making a difference!")
