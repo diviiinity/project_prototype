@@ -257,12 +257,18 @@ with main_c:
                 st.subheader("📡 Authorities Notified:")
                 st.success(contact_authorities(location, detected_types))
 
-                # Step 5: Show helpful tips
-                st.subheader("💡 Helpful Tips:")
-                for tip in get_reporting_tips(detected_types):
-                    st.markdown(f"- {tip}")
-
+                # Step 5: Show Before and After
+                st.subheader("🌟 See the Impact of Cleanup Efforts!")
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.image("images/before_after_collage1.jpg", use_column_width=True)
+                    st.caption("Marine Debris in Biscayne National Park, U.S. National Park Service")
+                with col2:
+                    st.image("images/before_after_collage2.jpg", use_column_width=True)
+                    st.caption("Before and after Andy's Christmas Day 2024 efforts showing the impact one dedicated person can have")
+                    
                 st.success("✅ Thanks for reporting and making a difference!")
+
         else:
             st.warning("Please upload an image to begin.")
 
