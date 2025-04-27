@@ -1,6 +1,6 @@
 type,disposal_agency,category
-Plastic Waste,Local Sanitation Department,Plastic
-Oil Spill,Environmental Protection Agency,Oil
+plastic,Local Sanitation Department,Plastic
+Oil,Environmental Protection Agency,Oil
 Construction Debris,City Waste Management,Construction
 Electronic Waste,Tech Recycling Center,Electronics
 Food Waste,City Compost Facility,Organic
