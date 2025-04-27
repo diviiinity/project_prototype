@@ -106,7 +106,8 @@ def contact_authorities(location, detected_types):
 
     for dtype in detected_types:
         for _, row in dumping_data.iterrows():
-            if dtype.lower() in row['type'].lower():
+            # Check if row['type'] (from table) exists inside the detected dtype
+            if row['type'].lower() in dtype.lower():
                 matched_agencies.add(row['disposal_agency'])
 
     if matched_agencies:
@@ -115,15 +116,6 @@ def contact_authorities(location, detected_types):
         agencies_str = "No specific agencies found."
 
     return f"Local authorities and cleanup agencies contacted at **{location}**: {agencies_str}."
-
-# Get tips based on dump categories
-def get_reporting_tips(detected_types):
-    categories = set()
-    for dtype in detected_types:
-        matches = dumping_data[dumping_data['type'].str.lower().str.contains(dtype.lower())]
-        categories.update(matches['category'].tolist())
-    matched_tips = tips_data[tips_data['category'].isin(categories)]
-    return matched_tips['tips'].tolist()
 
 
 # Streamlit CSS Background & Heading
